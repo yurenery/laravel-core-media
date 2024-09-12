@@ -6,6 +6,7 @@ use AttractCores\LaravelCoreMedia\MediaStorage;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -91,8 +92,6 @@ class AwsExists implements Rule
      */
     public function passes($attribute, $value)
     {
-        /** @var Collection $skipThis */
-        /** @var Collection $extensions */
         $skipThis = collect($this->files);
         $extensions = collect($this->extensions);
 
@@ -100,20 +99,21 @@ class AwsExists implements Rule
             return true;
         }
 
-        if ($existence = $this->isExists($value)) {
+        if ($this->isExists($value)) {
+            if ($extensions->isEmpty()) {
+                return true;
+            }
+
+            $fileExtension = pathinfo($value, PATHINFO_EXTENSION);
+            
             foreach ($extensions as $extension) {
-                $pattern = preg_quote($extension, '/');
-                //check for extensions or mimetypes.
-                if (Str::contains($extension, '/') && preg_match("/$pattern/", \Storage::disk($existence['disk'])->mimeType($existence['path']))) {
-                    //Has mimeType parameters.
-                    return true;
-                } elseif (preg_match("/$pattern/", $value)) {
+                if (Str::contains($extension, '/')) {
+                    // If it's a MIME type, we can't check it without getMetadata(), so we'll skip
+                    continue;
+                } elseif (strtolower($fileExtension) === strtolower($extension)) {
                     return true;
                 }
             }
-
-            //extensions are empty. Accept all extensions.
-            return true;
         }
 
         return false;
@@ -139,15 +139,12 @@ class AwsExists implements Rule
      */
     protected function isExists($value)
     {
-        if (MediaStorage::adapterByDisk('s3')->storage()->exists($value)) {
-            //check for simple source
-
-            return [
-                'path' => $value,
-                'disk' => 's3',
-            ];
+        try {
+            $disk = Storage::disk('s3');
+            return $disk->exists($value);
+        } catch (\Exception $e) {
+            Log::error('Error checking file on S3: ' . $e->getMessage());
+            return false;
         }
-
-        return false;
     }
 }

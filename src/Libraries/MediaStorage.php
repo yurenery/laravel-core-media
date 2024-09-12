@@ -2,7 +2,9 @@
 
 namespace AttractCores\LaravelCoreMedia\Libraries;
 
-use Illuminate\Contracts\Filesystem\Filesystem;
+use League\Flysystem\FilesystemOperator;
+use AttractCores\LaravelCoreMedia\Libraries\S3MediaDiskAdapter;
+use AttractCores\LaravelCoreMedia\Libraries\LocalMediaDiskAdapter;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 
@@ -103,12 +105,12 @@ class MediaStorage
     /**
      * Create s3 adapter.
      *
-     * @param \Illuminate\Contracts\Filesystem\Filesystem $storage
-     * @param array                                       $config
+     * @param FilesystemOperator $storage
+     * @param array $config
      *
-     * @return \AttractCores\LaravelCoreMedia\Libraries\S3MediaDiskAdapter
+     * @return S3MediaDiskAdapter
      */
-    protected function createS3Adapter(Filesystem $storage, array $config)
+    protected function createS3Adapter(FilesystemOperator $storage, array $config): S3MediaDiskAdapter
     {
         return new S3MediaDiskAdapter($storage, $config);
     }
@@ -116,12 +118,12 @@ class MediaStorage
     /**
      * Create local adapter.
      *
-     * @param \Illuminate\Contracts\Filesystem\Filesystem $storage
-     * @param array                                       $config
+     * @param FilesystemOperator $storage
+     * @param array $config
      *
-     * @return \AttractCores\LaravelCoreMedia\Libraries\LocalMediaDiskAdapter
+     * @return LocalMediaDiskAdapter
      */
-    protected function createLocalAdapter(Filesystem $storage, array $config)
+    protected function createLocalAdapter(FilesystemOperator $storage, array $config): LocalMediaDiskAdapter
     {
         return new LocalMediaDiskAdapter($storage, $config);
     }
