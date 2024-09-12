@@ -15,7 +15,7 @@
         "devtools-marvellous/laravel-core-classes": "^1.1.15",
         "league/flysystem-aws-s3-v3": "^3.0",
         "devtools-marvellous/postman-documentation": "^1.2.12",
-        "laravel/passport": "^12.3"
+        "laravel/passport": "^11.0"
     },
     "autoload": {
         "psr-4": {
